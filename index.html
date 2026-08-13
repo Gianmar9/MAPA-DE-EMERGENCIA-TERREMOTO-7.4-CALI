@@ -690,8 +690,8 @@ const META = {
    se están compartiendo. */
 const SERVIDOR = String(window.SERVIDOR_MAPA || "https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/").trim();
 
-const URL_EN_VIVO  = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/puntos"   : "";
-const URL_REPORTAR = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/reportar" : "";
+const URL_EN_VIVO  = SERVIDOR ? SERVIDOR.replace(/\/$/,"https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/") + "/api/puntos"   : "https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/";
+const URL_REPORTAR = SERVIDOR ? SERVIDOR.replace(/\/$/,"https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/") + "/api/reportar" : "https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/";
 const REFRESCO_MS = 20000;   // cada cuánto se buscan los puntos de los demás
 
 let DATA = JSON.parse(JSON.stringify(BASE_DATA));
