@@ -689,10 +689,17 @@ const META = {
    enorme. Si `config.js` falta, el mapa igual abre y avisa que los puntos no
    se están compartiendo. */
 const SERVIDOR = String(window.SERVIDOR_MAPA || "").trim();
+const BASE_SERVIDOR = SERVIDOR.replace(/\/+$/, "");
 
-const URL_EN_VIVO  = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/puntos"   : "";
-const URL_REPORTAR = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/reportar" : "";
-const REFRESCO_MS = 20000;   // cada cuánto se buscan los puntos de los demás
+const URL_EN_VIVO = BASE_SERVIDOR
+  ? BASE_SERVIDOR + "/api/puntos"
+  : "";
+
+const URL_REPORTAR = BASE_SERVIDOR
+  ? BASE_SERVIDOR + "/api/reportar"
+  : "";
+
+const REFRESCO_MS = 20000;
 
 let DATA = JSON.parse(JSON.stringify(BASE_DATA));
 const EDIT_KEY = "mapa-emergencia-cali-edits-v1";
