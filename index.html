@@ -78,16 +78,40 @@ select,textarea,input[type=text]{width:100%;border:1px solid var(--line);border-
   font-size:13px;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.4);display:flex;align-items:center;gap:7px}
 #marcarFab:hover{filter:brightness(1.08)}
 #marcarFab span{font-size:12px}
+#problemaServidor{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:900;
+  background:#fff;border:2px solid #c62828;border-radius:14px;padding:16px 18px;max-width:min(440px,90%);
+  box-shadow:0 10px 40px rgba(0,0,0,.35);font-size:12.5px;line-height:1.5}
+#problemaServidor b{display:block;color:#9c2d26;font-size:14px;margin-bottom:8px}
+#problemaServidor p{margin:0 0 8px}
+#problemaServidor p.sol{background:#f2f7fa;border-left:3px solid var(--navy2);padding:8px 10px;border-radius:6px;color:var(--navy)}
+#problemaServidor button{border:0;border-radius:9px;padding:10px 16px;background:var(--navy2);color:#fff;
+  font-weight:700;font-size:12px;cursor:pointer;margin-top:4px}
 #avisoSinServidor{position:absolute;left:12px;bottom:16px;z-index:749;background:rgba(156,45,38,.94);
   color:#fff;border-radius:10px;padding:9px 12px;font-size:11px;font-weight:700;max-width:52%;
   line-height:1.35;box-shadow:0 3px 12px rgba(0,0,0,.35)}
 
 /* Modo de marcado */
 #modoMarcar{position:absolute;inset:0;z-index:760;pointer-events:none}
+/* El alfiler flota y rebota, pero NO es lo que define la ubicación: el punto
+   exacto es la cruz de abajo, que está clavada en el centro del mapa y no se
+   mueve. Antes el rebote del dibujo hacía creer que el punto estaba unos metros
+   más arriba de donde realmente caía. */
 .mm-mira{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);
-  filter:drop-shadow(0 3px 6px rgba(0,0,0,.45));animation:mmLatido 1.6s ease-in-out infinite}
-@keyframes mmLatido{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-107%)}}
+  margin-top:-9px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45));
+  animation:mmLatido 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes mmLatido{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,-108%)}}
 @media (prefers-reduced-motion:reduce){.mm-mira{animation:none}}
+.mm-cruz{position:absolute;left:50%;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;
+  pointer-events:none}
+.mm-cruz:before,.mm-cruz:after{content:"";position:absolute;background:#12212e;
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.9)}
+.mm-cruz:before{left:50%;top:0;width:1.5px;height:26px;margin-left:-.75px}
+.mm-cruz:after{top:50%;left:0;height:1.5px;width:26px;margin-top:-.75px}
+.mm-cruz span{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px 0 0 -3.5px;
+  border-radius:50%;background:#c62828;box-shadow:0 0 0 2px #fff}
+.mm-precision{position:absolute;top:52px;left:50%;transform:translateX(-50%);
+  background:rgba(11,26,38,.9);color:#ffd479;border-radius:999px;padding:6px 12px;
+  font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.3)}
 .mm-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);background:rgba(11,26,38,.92);
   color:#fff;border-radius:999px;padding:9px 16px;font-size:12px;font-weight:700;white-space:nowrap;
   box-shadow:0 3px 12px rgba(0,0,0,.3);max-width:92%;overflow:hidden;text-overflow:ellipsis}
@@ -470,6 +494,7 @@ dialog::backdrop{background:rgba(4,29,48,.55)}
       <!-- Modo de marcado: mira fija en el centro; se mueve el mapa, no el dedo -->
       <div id="modoMarcar" hidden>
         <div class="mm-banner">Mové el mapa hasta el sitio · o tocá directamente el lugar</div>
+        <div class="mm-cruz"><span></span></div>
         <div class="mm-mira">
           <svg viewBox="0 0 48 64" width="48" height="64" aria-hidden="true">
             <path d="M24 61 L24 42" stroke="#12212e" stroke-width="2.5" stroke-linecap="round"/>
@@ -479,6 +504,7 @@ dialog::backdrop{background:rgba(4,29,48,.55)}
             <circle cx="24" cy="21.5" r="6.4" fill="#ffffff"/>
           </svg>
         </div>
+        <div class="mm-precision" id="mmPrecision" hidden></div>
         <div class="mm-barra">
           <button id="mmCancelar" class="mm-btn cancelar">Cancelar</button>
           <button id="mmConfirmar" class="mm-btn confirmar">Confirmar este sitio</button>
@@ -658,10 +684,10 @@ const META = {
    volver a configurarlo, y no hay que buscar una línea dentro de un archivo
    enorme. Si `config.js` falta, el mapa igual abre y avisa que los puntos no
    se están compartiendo. */
-const SERVIDOR = String(window.SERVIDOR_MAPA || "https://mapa-emergencia-cali.marloncifuentesgiron.workers.dev/").trim();
+const SERVIDOR = String(window.SERVIDOR_MAPA || "https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/").trim();
 
-const URL_EN_VIVO  = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/puntos"   : "";
-const URL_REPORTAR = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/reportar" : "";
+const URL_EN_VIVO  = SERVIDOR ? SERVIDOR.replace(/\/$/,"https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/") + "/api/puntos"   : "";
+const URL_REPORTAR = SERVIDOR ? SERVIDOR.replace(/\/$/,"https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/") + "/api/reportar" : "";
 const REFRESCO_MS = 20000;   // cada cuánto se buscan los puntos de los demás
 
 let DATA = JSON.parse(JSON.stringify(BASE_DATA));
@@ -1227,14 +1253,46 @@ function cerrarModoMarcar(){
   document.getElementById("marcarFab").style.display = "";
 }
 
-/** Muestra las coordenadas del centro para que se vea que el punto va cambiando. */
+const ZOOM_MINIMO = 15;      // por debajo de esto, un pixel son decenas de metros
+const ZOOM_RECOMENDADO = 17;
+
+/** Metros que representa un pixel de pantalla en el zoom actual, a la latitud de Cali. */
+function metrosPorPixel(){
+  return 156543.03392 * Math.cos(map.getCenter().lat * Math.PI/180) / Math.pow(2, map.getZoom());
+}
+
+/**
+ * Además de las coordenadas, avisa qué tan gruesa es la puntería en el zoom
+ * actual. Marcar un punto con el mapa alejado parece preciso pero no lo es: a
+ * zoom de ciudad, mover el dedo un centímetro son cientos de metros.
+ */
 function actualizarBannerMarcar(){
   if(!modoMarcar) return;
   const c = map.getCenter();
+  const z = map.getZoom();
   bannerMarcar.textContent =
     `Mové el mapa hasta el sitio · ${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}`;
+
+  const aviso = document.getElementById("mmPrecision");
+  const boton = document.getElementById("mmConfirmar");
+  const mpp = metrosPorPixel();
+  if(z < ZOOM_MINIMO){
+    aviso.hidden = false;
+    aviso.textContent = `🔍 Acercá más el mapa · así cada toque son ~${Math.round(mpp*10)} m de error`;
+    boton.disabled = true;
+    boton.style.opacity = .5;
+  } else if(z < ZOOM_RECOMENDADO){
+    aviso.hidden = false;
+    aviso.textContent = `Precisión aproximada: ±${Math.round(mpp*10)} m · acercá más si podés`;
+    boton.disabled = false;
+    boton.style.opacity = 1;
+  } else {
+    aviso.hidden = true;
+    boton.disabled = false;
+    boton.style.opacity = 1;
+  }
 }
-map.on("move", actualizarBannerMarcar);
+map.on("move zoom zoomend", actualizarBannerMarcar);
 
 document.getElementById("marcarBtn").addEventListener("click", abrirModoMarcar);
 document.getElementById("marcarFab").addEventListener("click", abrirModoMarcar);
@@ -1245,8 +1303,9 @@ map.on("click", (e)=>{ if(modoMarcar) map.panTo(e.latlng); });
 
 document.getElementById("mmConfirmar").addEventListener("click", ()=>{
   const c = map.getCenter();
+  const margen = Math.round(metrosPorPixel() * 10);
   cerrarModoMarcar();
-  abrirFormularioRapido({lat:c.lat, lng:c.lng});
+  abrirFormularioRapido({lat:c.lat, lng:c.lng, margen});
 });
 
 /* ------------------------- formulario rápido ---------------------------- */
@@ -1273,7 +1332,7 @@ function abrirFormularioRapido(punto){
     <div class="gps-banner ${compartido?"":"duda"}">
       <span style="font-size:16px;line-height:1">📌</span>
       <div><b>Sitio marcado</b>
-      ${punto.lat.toFixed(5)}, ${punto.lng.toFixed(5)}.
+      ${punto.lat.toFixed(5)}, ${punto.lng.toFixed(5)}${punto.margen?` · precisión ±${punto.margen} m`:""}.
       ${compartido
         ? "Al guardarlo se envía al servidor y lo van a ver todos los que abran el mapa."
         : "⚠ Este mapa todavía no tiene servidor configurado, así que el punto se va a guardar <b>solo en este dispositivo</b>. Nadie más lo va a ver."}
@@ -1316,7 +1375,8 @@ document.getElementById("qSave").addEventListener("click",()=>{
     fuente:"Reporte marcado en el mapa por un usuario",
     fuente_id:"chat", url:"",
     precision:"marcado",
-    precision_nota:"Punto señalado a mano sobre el mapa por quien reportó.",
+    precision_nota:"Punto señalado a mano sobre el mapa por quien reportó." +
+      (puntoPendiente.margen ? ` Marcado con el mapa a una escala de ±${puntoPendiente.margen} m.` : ""),
     confirmaciones_usuario:1,
     actualizado:ahora,
     lat:Number(puntoPendiente.lat.toFixed(6)), lng:Number(puntoPendiente.lng.toFixed(6)),
@@ -1353,7 +1413,9 @@ async function publicarEnServidor(registro, punto){
     });
     if(!res.ok){
       const detalle = await res.json().catch(()=>({}));
-      throw new Error(detalle.error || ("HTTP " + res.status));
+      const e = new Error(detalle.error || ("El servidor respondió con un error " + res.status));
+      e.solucion = detalle.solucion; e.motivo = detalle.motivo;
+      throw e;
     }
     const {punto:creado} = await res.json();
     // El servidor manda su propia versión (con id y clasificación definitivos):
@@ -1367,8 +1429,25 @@ async function publicarEnServidor(registro, punto){
     toast("✅ Punto publicado. Ya lo pueden ver los demás.");
   }catch(e){
     marcarAlcance(registro, "local");
-    toast("⚠ No se pudo enviar al servidor. El punto quedó solo en este dispositivo.");
+    const motivo = e && e.message ? e.message : "no se pudo contactar al servidor";
+    toast("⚠ " + motivo + " — el punto quedó solo en este dispositivo.");
+    if(e && e.solucion) mostrarProblemaServidor(motivo, e.solucion);
   }
+}
+
+/** Panel fijo con el problema del servidor y qué hacer, para no perderlo. */
+function mostrarProblemaServidor(problema, solucion){
+  let caja = document.getElementById("problemaServidor");
+  if(!caja){
+    caja = document.createElement("div");
+    caja.id = "problemaServidor";
+    document.querySelector(".mapwrap").appendChild(caja);
+  }
+  caja.innerHTML = `<b>El servidor no está guardando los puntos</b>
+    <p>${esc(problema)}</p><p class="sol">${esc(solucion)}</p>
+    <button type="button">Entendido</button>`;
+  caja.querySelector("button").addEventListener("click",()=>caja.remove());
+  caja.hidden = false;
 }
 
 /** Deja constancia en la ficha de que el punto no salió de este navegador. */
@@ -1513,7 +1592,22 @@ function marcarEstadoVivo(ok, n){
   el.textContent = ok ? `● En vivo · ${n} por chat` : "● Sin conexión con la línea de reportes";
   el.className = "vivo " + (ok ? "ok" : "mal");
 }
+/** Al abrir el mapa se pregunta si el servidor está completo, para avisar antes
+    de que alguien marque un punto creyendo que va a quedar guardado. */
+async function comprobarServidor(){
+  try{
+    const res = await fetch(SERVIDOR, {cache:"no-store"});
+    const info = await res.json();
+    if(info && info.estado && info.estado !== "LISTO"){
+      mostrarProblemaServidor(info.problema || info.estado, info.que_hacer || "");
+      const el = document.getElementById("estadoVivo");
+      if(el){ el.textContent = "○ Servidor incompleto: no guarda puntos"; el.className = "vivo mal"; }
+    }
+  }catch(e){ /* si no responde, ya lo reporta traerEnVivo */ }
+}
+
 if(URL_EN_VIVO){
+  comprobarServidor();
   traerEnVivo();
   setInterval(traerEnVivo, REFRESCO_MS);
 } else {
