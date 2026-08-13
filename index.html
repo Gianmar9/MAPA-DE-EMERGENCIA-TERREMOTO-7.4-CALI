@@ -688,10 +688,10 @@ const META = {
    volver a configurarlo, y no hay que buscar una línea dentro de un archivo
    enorme. Si `config.js` falta, el mapa igual abre y avisa que los puntos no
    se están compartiendo. */
-const SERVIDOR = String(window.SERVIDOR_MAPA || "https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/").trim();
+const SERVIDOR = String(window.SERVIDOR_MAPA || "").trim();
 
-const URL_EN_VIVO  = SERVIDOR ? SERVIDOR.replace(/\/$/,"https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/") + "/api/puntos"   : "https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/";
-const URL_REPORTAR = SERVIDOR ? SERVIDOR.replace(/\/$/,"https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/") + "/api/reportar" : "https://mapa-de-emergencia-cali.marloncifuentesgiron.workers.dev/";
+const URL_EN_VIVO  = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/puntos"   : "";
+const URL_REPORTAR = SERVIDOR ? SERVIDOR.replace(/\/$/,"") + "/api/reportar" : "";
 const REFRESCO_MS = 20000;   // cada cuánto se buscan los puntos de los demás
 
 let DATA = JSON.parse(JSON.stringify(BASE_DATA));
